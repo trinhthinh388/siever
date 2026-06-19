@@ -1,0 +1,20 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "strict": true,
+    "rootDir": ".",
+    "target": "esnext",
+    "sourceMap": true,
+    "declaration": true,
+    "module": "preserve",
+    "skipLibCheck": true,
+    "importHelpers": true,
+    "declarationMap": true,
+    "skipDefaultLibCheck": true,
+    "moduleResolution": "bundler",
+    "typeRoots": ["node_modules/@types"],
+    "paths": {
+      "@core": ["./packages/core/src/index.ts"]
+    }
+  }
+}
