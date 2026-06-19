@@ -1,4 +1,9 @@
 type PlainObject = Record<string, unknown>;
+type DeepPartial<T> = T extends PlainObject
+  ? {
+      [P in keyof T]?: DeepPartial<T[P]>;
+    }
+  : T;
 
 const isPlainObject = (value: unknown): value is PlainObject =>
   typeof value === 'object' &&
@@ -12,21 +17,17 @@ const isPlainObject = (value: unknown): value is PlainObject =>
  * - Arrays and primitives from later sources overwrite earlier values.
  * - The original objects are never mutated.
  */
-export const merge = <T extends PlainObject>(...sources: Partial<T>[]): T => {
-  const result: PlainObject = {};
+export const merge = <T extends PlainObject>(one: T, another: DeepPartial<T>): T => {
+  const result: PlainObject = { ...one };
 
-  for (const source of sources) {
-    if (!isPlainObject(source)) continue;
+  for (const key of Object.keys(another)) {
+    const targetVal = result[key];
+    const sourceVal = another[key as keyof typeof another];
 
-    for (const key of Object.keys(source)) {
-      const targetVal = result[key];
-      const sourceVal = source[key as keyof typeof source];
-
-      if (isPlainObject(targetVal) && isPlainObject(sourceVal)) {
-        result[key] = merge(targetVal, sourceVal);
-      } else {
-        result[key] = sourceVal;
-      }
+    if (isPlainObject(targetVal) && isPlainObject(sourceVal)) {
+      result[key] = merge(targetVal, sourceVal);
+    } else {
+      result[key] = sourceVal;
     }
   }
 

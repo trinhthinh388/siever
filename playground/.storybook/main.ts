@@ -3,9 +3,12 @@ import { fileURLToPath } from 'node:url';
 
 import type { StorybookConfig } from '@storybook/react-vite';
 
+const getAbsolutePath = (value: string): string =>
+  dirname(fileURLToPath(import.meta.resolve(`${value}/package.json`)));
+
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   addons: [],
+  stories: ['../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
   framework: {
     name: getAbsolutePath('@storybook/react-vite'),
     options: {
@@ -15,10 +18,6 @@ const config: StorybookConfig = {
     },
   },
 };
-
-function getAbsolutePath(value: string): any {
-  return dirname(fileURLToPath(import.meta.resolve(`${value}/package.json`)));
-}
 
 export default config;
 

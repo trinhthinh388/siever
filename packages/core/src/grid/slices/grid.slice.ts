@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { merge } from '../../utils';
 import { DEFAULT_GRID_HEIGHT, DEFAULT_GRID_WIDTH } from '../constants';
 
@@ -36,14 +36,14 @@ export const gridSlice = createSlice({
   name: 'grid',
   reducerPath: '_siever/grid',
   selectors: {
+    configuration: (state) => state.configuration,
     cellDimension: (state) => state.dimension.cell,
   },
   reducers: {
-    update: (state, action: PayloadAction<Partial<GridState>>) => {
-      merge(state, action.payload);
-    },
-    updateConfiguration: (state, action: PayloadAction<Partial<GridConfiguration>>) => {
-      merge(state.configuration, action.payload);
-    },
+    update: (state, action: PayloadAction<Partial<GridState>>) => merge(state, action.payload),
+    updateGridDimension: (state, action: PayloadAction<Partial<Dimension>>) =>
+      merge(state, { dimension: { grid: action.payload } }),
+    updateConfiguration: (state, action: PayloadAction<Partial<GridConfiguration>>) =>
+      merge(state, { configuration: action.payload }),
   },
 });

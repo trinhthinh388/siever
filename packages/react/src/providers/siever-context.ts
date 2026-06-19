@@ -1,7 +1,8 @@
-import { Store } from '@core';
+import type { Grid, Store } from '@core';
 import { createContext, useContext } from 'react';
 
 export type SieverContextValue = {
+  grid: Grid;
   store: Store;
 };
 

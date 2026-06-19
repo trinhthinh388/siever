@@ -1,4 +1,4 @@
-import { AppDispatch, RootState } from '@core';
+import type { AppDispatch, RootState } from '@core';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSieverContext } from '../providers/siever-context';
 
