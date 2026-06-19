@@ -14,7 +14,8 @@
     "moduleResolution": "bundler",
     "typeRoots": ["node_modules/@types"],
     "paths": {
-      "@core": ["./packages/core/src/index.ts"]
+      "@core": ["./packages/core/src/index.ts"],
+      "@react": ["./packages/react/src/index.ts"]
     }
   }
 }

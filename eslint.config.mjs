@@ -14,7 +14,16 @@ export default [
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
       '@typescript-eslint/no-namespace': 'off',
+      '@typescript-eslint/no-import-type-side-effects': 'error',
       '@typescript-eslint/method-signature-style': ['warn', 'property'],
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          prefer: 'type-imports',
+          disallowTypeAnnotations: false,
+          fixStyle: 'inline-type-imports',
+        },
+      ],
       '@nx/enforce-module-boundaries': [
         'error',
         {
