@@ -21,6 +21,8 @@ export const Grid = withGridProvider(
 
     return (
       <div
+        data-slot="grid"
+        data-component="siever"
         ref={mergeRefs(grid.gridRef, ref)}
         className={classNames('siever__grid', className)}
         style={

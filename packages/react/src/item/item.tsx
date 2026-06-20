@@ -53,6 +53,7 @@ export const Item = <TProps extends ComponentPropsWithRef<'div'>>({
   return (
     <div
       id={item.id}
+      data-component="siever"
       data-slot="item"
       style={{
         top: dimension.y,

@@ -1,4 +1,5 @@
 import type { Grid } from '../grid';
+import { recursiveFindItemElement } from '../utils/recursive-find-item-element';
 import { BaseManager } from './base';
 
 export type DNDManagerInitializeParams = {
@@ -16,7 +17,7 @@ class DNDManager extends BaseManager {
   init = (): void => {
     this.disposes.push(
       this.grid.subscribe('mouseDown', (e) => {
-        console.log(e.target);
+        console.log(recursiveFindItemElement(e.target));
       }),
     );
   };
