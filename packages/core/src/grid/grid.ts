@@ -1,5 +1,5 @@
 import type { Item } from '../item';
-import { DNDManager } from '../manager';
+import { DNDManager, EventManager, type MouseEventHandler, type SupportedEvents } from '../manager';
 import type { Store } from '../store';
 import { measure } from '../utils';
 import { CELL_BORDER_SIZE, DEFAULT_GRID_HEIGHT, DEFAULT_GRID_WIDTH } from './constants';
@@ -13,6 +13,7 @@ export type GridConstructorParams = {
 
 type GridManagers = {
   dnd: DNDManager;
+  events: EventManager;
 };
 
 type GridObservers = {
@@ -21,16 +22,11 @@ type GridObservers = {
 };
 
 export class Grid {
-  #calculateCellSize = (gridWidth = 0, gridHeight = 0) => {
-    const cellSize = Math.max(
-      (gridWidth + 2 * CELL_BORDER_SIZE) /
-        gridSlice.selectors.configuration(this.store.getState()).width,
-      (gridHeight + 2 * CELL_BORDER_SIZE) /
-        gridSlice.selectors.configuration(this.store.getState()).height,
-    );
-    return cellSize;
+  private store: Store;
+  private managers: GridManagers = {
+    dnd: new DNDManager(),
+    events: new EventManager(),
   };
-
   #createMutationObserver = () =>
     new MutationObserver((mutationList) => {
       for (const mutation of mutationList) {
@@ -41,7 +37,6 @@ export class Grid {
         }
       }
     });
-
   #createResizeObserver = () =>
     new ResizeObserver((entries) => {
       const gridEntry = entries.at(0);
@@ -63,9 +58,20 @@ export class Grid {
       );
     });
 
-  store: Store;
-  managers: GridManagers;
-  observers: GridObservers;
+  private observers: GridObservers = {
+    resize: this.#createResizeObserver(),
+    mutation: this.#createMutationObserver(),
+  };
+
+  #calculateCellSize = (gridWidth = 0, gridHeight = 0) => {
+    const cellSize = Math.max(
+      (gridWidth + 2 * CELL_BORDER_SIZE) /
+        gridSlice.selectors.configuration(this.store.getState()).width,
+      (gridHeight + 2 * CELL_BORDER_SIZE) /
+        gridSlice.selectors.configuration(this.store.getState()).height,
+    );
+    return cellSize;
+  };
 
   /**
    * Returns the current cell size.
@@ -78,6 +84,10 @@ export class Grid {
   cleanup = () => {
     this.observers.resize.disconnect();
     this.observers.mutation.disconnect();
+  };
+
+  subscribe = (event: SupportedEvents, callback: MouseEventHandler) => {
+    return this.managers.events.subscribe(event, callback);
   };
 
   /**
@@ -94,26 +104,25 @@ export class Grid {
 
   gridRef = (element: HTMLDivElement | null) => {
     if (!element) return;
-
+    const unregister = this.managers.events.register(element);
     this.observers.resize.observe(element);
     // this.observers.mutation.observe(element, {
     //   childList: true,
     // });
+
+    return () => {
+      unregister();
+    };
   };
+
+  getManagers = () => this.managers;
 
   constructor({
     store,
     width = DEFAULT_GRID_WIDTH,
     height = DEFAULT_GRID_HEIGHT,
   }: GridConstructorParams) {
-    this.observers = {
-      resize: this.#createResizeObserver(),
-      mutation: this.#createMutationObserver(),
-    };
     this.store = store;
-    this.managers = {
-      dnd: new DNDManager({ store }),
-    };
     this.store.dispatch(
       gridSlice.actions.update({
         configuration: {

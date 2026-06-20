@@ -12,6 +12,8 @@
     "declarationMap": true,
     "skipDefaultLibCheck": true,
     "moduleResolution": "bundler",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "typeRoots": ["node_modules/@types"],
     "paths": {
       "@core": ["./packages/core/src/index.ts"],

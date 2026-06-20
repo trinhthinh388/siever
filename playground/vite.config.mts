@@ -3,6 +3,7 @@ import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import babel from 'vite-plugin-babel';
 
 export default defineConfig(() => ({
   root: import.meta.dirname,
@@ -15,7 +16,6 @@ export default defineConfig(() => ({
     port: 4200,
     host: 'localhost',
   },
-  plugins: [react(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
   build: {
     emptyOutDir: true,
     reportCompressedSize: true,
@@ -24,4 +24,14 @@ export default defineConfig(() => ({
       transformMixedEsModules: true,
     },
   },
+  plugins: [
+    babel({
+      babelConfig: {
+        plugins: ['babel-plugin-transform-typescript-metadata'],
+      },
+    }),
+    react(),
+    nxViteTsPaths(),
+    nxCopyAssetsPlugin(['*.md']),
+  ],
 }));

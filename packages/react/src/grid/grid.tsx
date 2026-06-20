@@ -21,7 +21,7 @@ export const Grid = withGridProvider(
 
     return (
       <div
-        ref={mergeRefs(grid.gridRef, grid.managers.dnd.dropZoneRef, ref)}
+        ref={mergeRefs(grid.gridRef, grid.getManagers().dnd.dropZoneRef, ref)}
         className={classNames('siever__grid', className)}
         style={
           {

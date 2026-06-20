@@ -1,11 +1,17 @@
 import { Item as ItemClass } from '@core';
-import { type ComponentType, useLayoutEffect, useMemo, useState } from 'react';
+import {
+  type ComponentPropsWithRef,
+  type ComponentType,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useGridContext } from '../hooks';
 import { useGridState } from '../hooks/use-grid-state';
 import { classNames } from '../utils';
 import { mergeRefs } from '../utils/merge-refs';
 
-export type ItemProps<TProps> = {
+export type ItemProps<TProps extends ComponentPropsWithRef<'div'>> = {
   x?: number;
   y?: number;
   width?: number;
@@ -14,7 +20,8 @@ export type ItemProps<TProps> = {
   component?: ComponentType<TProps>;
 } & TProps;
 
-export const Item = <TProps,>({
+export const Item = <TProps extends ComponentPropsWithRef<'div'>>({
+  ref,
   x = 0,
   y = 0,
   width = 0,
@@ -32,11 +39,12 @@ export const Item = <TProps,>({
   }, [grid, item]);
 
   const InnerComponent = useMemo(() => {
-    // @ts-expect-error render customized component.
-    if (Component) return <Component {...componentProps} />;
+    if (Component)
+      // @ts-expect-error render customized component.
+      return <Component ref={mergeRefs(grid.managers.dnd.register, ref)} {...componentProps} />;
 
     return null;
-  }, [componentProps, Component]);
+  }, [Component, grid.managers.dnd.register, ref, componentProps]);
 
   if (!items[item.id]) return null;
 
@@ -44,7 +52,7 @@ export const Item = <TProps,>({
 
   return (
     <div
-      ref={mergeRefs(grid.managers.dnd.register)}
+      id={item.id}
       style={{
         top: dimension.y,
         left: dimension.x,

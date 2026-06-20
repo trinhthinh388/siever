@@ -88,7 +88,7 @@ export default [
         'error',
         {
           order: 'asc',
-          type: 'line-length',
+          type: 'unsorted',
           groups: [
             'index-signature',
             'static-property',
