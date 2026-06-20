@@ -2,16 +2,16 @@
 
 .siever {
   &__grid {
+    position: relative;
     box-sizing: content-box;
-    border-inline-end: 1px solid $border;
-    border-block-end: 1px solid $border;
-    background-image:
-      linear-gradient($border 1px, transparent 1px),
-      linear-gradient(90deg, $border 1px, transparent 1px);
+    border: 1px solid $border;
+    border-radius: $radius;
+    // background-image:
+    //   linear-gradient($border 1px, transparent 1px),
+    //   linear-gradient(90deg, $border 1px, transparent 1px);
+    background-position: -1px -1px;
     background-size: var(--siever-grid-cell-size, 0) var(--siever-grid-cell-size, 0);
-    width: 100%;
     min-width: var(--siever-grid-width);
-    height: 100%;
     min-height: var(--siever-grid-height);
   }
 }

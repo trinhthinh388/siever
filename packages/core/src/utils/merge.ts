@@ -1,9 +1,4 @@
-type PlainObject = Record<string, unknown>;
-type DeepPartial<T> = T extends PlainObject
-  ? {
-      [P in keyof T]?: DeepPartial<T[P]>;
-    }
-  : T;
+import type { DeepPartial, PlainObject } from '../types';
 
 const isPlainObject = (value: unknown): value is PlainObject =>
   typeof value === 'object' &&

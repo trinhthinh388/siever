@@ -1,0 +1,8 @@
+@use '../variables' as *;
+
+.siever {
+  &__drag-handle {
+    cursor: grab;
+    transition: transform .3s ease, box-shadow .3s ease;
+  }
+}
