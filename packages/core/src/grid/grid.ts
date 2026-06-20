@@ -24,8 +24,8 @@ type GridObservers = {
 export class Grid {
   private store: Store;
   private managers: GridManagers = {
-    dnd: new DNDManager(),
-    events: new EventManager(),
+    dnd: new DNDManager({ grid: this }),
+    events: new EventManager({ grid: this }),
   };
   #createMutationObserver = () =>
     new MutationObserver((mutationList) => {
@@ -131,5 +131,8 @@ export class Grid {
         },
       }),
     );
+
+    this.managers.dnd.init();
+    this.managers.events.init();
   }
 }

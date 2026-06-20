@@ -41,10 +41,10 @@ export const Item = <TProps extends ComponentPropsWithRef<'div'>>({
   const InnerComponent = useMemo(() => {
     if (Component)
       // @ts-expect-error render customized component.
-      return <Component ref={mergeRefs(grid.managers.dnd.register, ref)} {...componentProps} />;
+      return <Component ref={mergeRefs(ref)} {...componentProps} />;
 
     return null;
-  }, [Component, grid.managers.dnd.register, ref, componentProps]);
+  }, [Component, ref, componentProps]);
 
   if (!items[item.id]) return null;
 
@@ -53,6 +53,7 @@ export const Item = <TProps extends ComponentPropsWithRef<'div'>>({
   return (
     <div
       id={item.id}
+      data-slot="item"
       style={{
         top: dimension.y,
         left: dimension.x,

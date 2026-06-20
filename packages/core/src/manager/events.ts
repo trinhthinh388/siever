@@ -1,8 +1,16 @@
+import type { Grid } from '../grid';
+import { BaseManager } from './base';
+
 export type MouseEventHandler = (event: MouseEvent) => void;
 
 export type SupportedEvents = 'mouseDown' | 'mouseUp' | 'mouseMove';
 
-class EventManager {
+type EventManagerConstructorParams = {
+  grid: Grid;
+};
+
+class EventManager extends BaseManager {
+  private grid: Grid;
   private onMouseUpCallbacks: Set<MouseEventHandler> = new Set();
   private onMouseDownCallbacks: Set<MouseEventHandler> = new Set();
 
@@ -35,6 +43,15 @@ class EventManager {
       element.removeEventListener('mouseup', onMouseUp);
     };
   };
+
+  init = (): void => {
+    console.log('HIHI', this.grid);
+  };
+
+  constructor({ grid }: EventManagerConstructorParams) {
+    super();
+    this.grid = grid;
+  }
 }
 
 export { EventManager };
