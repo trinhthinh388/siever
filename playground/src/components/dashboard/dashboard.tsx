@@ -17,12 +17,23 @@ export const Dashboard = () => {
           <Item
             x={2}
             y={4}
-            width={8}
-            height={5}
+            width={2}
+            height={3}
             component={ItemComponent}
-            className="w-full h-full border rounded-md shadow-md px-10 siever__drag-handle transition-all delay-0 ease-linear data-[active]:scale-105 data-[active]:shadow-2xl"
+            className="bg-white w-full h-full border rounded-md shadow-md px-10 siever__drag-handle transition-all delay-0 ease-linear data-[active]:scale-105 data-[active]:shadow-2xl"
           >
             1
+          </Item>
+
+          <Item
+            x={4}
+            y={4}
+            width={2}
+            height={3}
+            component={ItemComponent}
+            className="bg-white w-full h-full border rounded-md shadow-md px-10 siever__drag-handle transition-all delay-0 ease-linear data-[active]:scale-105 data-[active]:shadow-2xl"
+          >
+            2
           </Item>
         </Grid>
       </div>

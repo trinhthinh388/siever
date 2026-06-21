@@ -4,6 +4,7 @@
   &__item--dragging {
     transform-origin: var(--siever-item-transform-origin, 0% 0%) !important;
     translate: var(--siever-item-translate, 0 0) !important;
+    z-index: 9999;
     transition: box-shadow 0.3s ease !important;
     cursor: grabbing !important;
   }
