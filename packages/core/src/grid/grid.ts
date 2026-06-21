@@ -117,6 +117,8 @@ export class Grid {
 
   getManagers = () => this.managers;
 
+  getStore = () => this.store;
+
   constructor({
     store,
     width = DEFAULT_GRID_WIDTH,

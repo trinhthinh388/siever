@@ -1,2 +1,2 @@
-export * from './dnd';
+export * from './dnd/dnd';
 export * from './events';

@@ -1,11 +1,5 @@
 import { Item as ItemClass } from '@core';
-import {
-  type ComponentPropsWithRef,
-  type ComponentType,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { type ComponentPropsWithRef, type ComponentType, useLayoutEffect, useState } from 'react';
 import { useGridContext } from '../hooks';
 import { useGridState } from '../hooks/use-grid-state';
 import { classNames } from '../utils';
@@ -17,7 +11,7 @@ export type ItemProps<TProps extends ComponentPropsWithRef<'div'>> = {
   width?: number;
   height?: number;
   className?: string;
-  component?: ComponentType<TProps>;
+  component?: ComponentType<TProps> | React.ElementType;
 } & TProps;
 
 export const Item = <TProps extends ComponentPropsWithRef<'div'>>({
@@ -27,7 +21,7 @@ export const Item = <TProps extends ComponentPropsWithRef<'div'>>({
   width = 0,
   className,
   height = 0,
-  component: Component,
+  component: Component = 'div',
   ...componentProps
 }: ItemProps<TProps>) => {
   const { grid } = useGridContext();
@@ -38,21 +32,14 @@ export const Item = <TProps extends ComponentPropsWithRef<'div'>>({
     grid.addItem(item);
   }, [grid, item]);
 
-  const InnerComponent = useMemo(() => {
-    if (Component)
-      // @ts-expect-error render customized component.
-      return <Component ref={mergeRefs(ref)} {...componentProps} />;
-
-    return null;
-  }, [Component, ref, componentProps]);
-
   if (!items[item.id]) return null;
 
   const { dimension } = items[item.id];
 
   return (
-    <div
+    <Component
       id={item.id}
+      ref={mergeRefs(ref)}
       data-component="siever"
       data-slot="item"
       style={{
@@ -61,9 +48,8 @@ export const Item = <TProps extends ComponentPropsWithRef<'div'>>({
         width: dimension.width,
         height: dimension.height,
       }}
-      className={classNames('siever__item', className)}
-    >
-      {InnerComponent}
-    </div>
+      className={classNames('siever__item siever__draggable', className)}
+      {...componentProps}
+    />
   );
 };

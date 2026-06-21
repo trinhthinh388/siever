@@ -13,6 +13,7 @@ class EventManager extends BaseManager {
   private grid: Grid;
   private onMouseUpCallbacks: Set<MouseEventHandler> = new Set();
   private onMouseDownCallbacks: Set<MouseEventHandler> = new Set();
+  private onMouseMoveCallbacks: Set<MouseEventHandler> = new Set();
 
   subscribe = (event: SupportedEvents, callback: MouseEventHandler) => {
     switch (event) {
@@ -21,6 +22,9 @@ class EventManager extends BaseManager {
         return () => this.onMouseDownCallbacks.delete(callback);
       case 'mouseUp':
         this.onMouseUpCallbacks.add(callback);
+        return () => this.onMouseUpCallbacks.delete(callback);
+      case 'mouseMove':
+        this.onMouseMoveCallbacks.add(callback);
         return () => this.onMouseUpCallbacks.delete(callback);
       default:
         throw new Error(`Not supported event: ${event}`);
@@ -34,19 +38,21 @@ class EventManager extends BaseManager {
       Array.from(this.onMouseDownCallbacks).forEach((callback) => callback(event));
     const onMouseUp = (event: MouseEvent) =>
       Array.from(this.onMouseUpCallbacks).forEach((callback) => callback(event));
+    const onMouseMove = (event: MouseEvent) =>
+      Array.from(this.onMouseMoveCallbacks).forEach((callback) => callback(event));
 
     element.addEventListener('mousedown', onMouseDown);
+    element.addEventListener('mousemove', onMouseMove);
     element.addEventListener('mouseup', onMouseUp);
 
     return () => {
       element.removeEventListener('mousedown', onMouseDown);
+      element.removeEventListener('mousemove', onMouseMove);
       element.removeEventListener('mouseup', onMouseUp);
     };
   };
 
-  init = (): void => {
-    console.log('HIHI', this.grid);
-  };
+  init = (): void => {};
 
   constructor({ grid }: EventManagerConstructorParams) {
     super();

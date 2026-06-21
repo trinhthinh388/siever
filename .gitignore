@@ -2,6 +2,7 @@ node_modules
 
 # NX
 .nx
+*.log
 vite.config.*.timestamp*
 
 storybook-static

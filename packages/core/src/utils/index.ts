@@ -2,3 +2,4 @@ export * from './calculate-item-dimension';
 export * from './generate-id';
 export * from './measure';
 export * from './merge';
+export * from './to-px';
