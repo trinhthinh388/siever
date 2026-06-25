@@ -1,3 +1,4 @@
+export * from './bisect-left';
 export * from './calculate-item-dimension';
 export * from './generate-id';
 export * from './measure';

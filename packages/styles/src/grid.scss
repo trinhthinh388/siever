@@ -3,7 +3,7 @@
 .siever {
   &__grid {
     position: relative;
-    box-sizing: content-box;
+    box-sizing: border-box;
     border: 1px solid $border;
     border-radius: $radius;
     // background-image:

@@ -4,10 +4,7 @@ import { dndSlice } from '../manager/dnd';
 
 export const createStore = () => {
   const store = configureStore({
-    middleware: (gdm) =>
-      gdm({
-        serializableCheck: false,
-      }),
+    middleware: (gdm) => gdm(),
     reducer: {
       [dndSlice.reducerPath]: dndSlice.reducer,
       [gridSlice.reducerPath]: gridSlice.reducer,

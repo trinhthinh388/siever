@@ -13,25 +13,25 @@ export const Dashboard = () => {
   return (
     <SieverProvider>
       <div className="w-full h-full">
-        <Grid>
+        <Grid className="p-6">
           <Item
-            x={2}
-            y={4}
-            width={2}
-            height={3}
+            x={11}
+            y={0}
+            width={1}
+            height={1}
             component={ItemComponent}
-            className="bg-white w-full h-full border rounded-md shadow-md px-10 siever__drag-handle transition-all delay-0 ease-linear data-[active]:scale-105 data-[active]:shadow-2xl"
+            className="bg-white w-full h-full border rounded-md shadow-md siever__drag-handle transition-all delay-0 ease-linear data-[active]:scale-105 data-[active]:shadow-2xl"
           >
             1
           </Item>
 
           <Item
-            x={4}
-            y={4}
-            width={2}
-            height={3}
+            x={1}
+            y={0}
+            width={1}
+            height={1}
             component={ItemComponent}
-            className="bg-white w-full h-full border rounded-md shadow-md px-10 siever__drag-handle transition-all delay-0 ease-linear data-[active]:scale-105 data-[active]:shadow-2xl"
+            className="bg-white w-full h-full border rounded-md shadow-md siever__drag-handle transition-all delay-0 ease-linear data-[active]:scale-105 data-[active]:shadow-2xl"
           >
             2
           </Item>

@@ -1,4 +1,11 @@
+import type { Dimension } from '../types';
 import { generateId } from '../utils';
+
+export type SerializedItem = {
+  id: string;
+  dimension: Dimension;
+  configuration: ItemConfiguration;
+};
 
 export type ItemConfiguration = {
   x: number;
@@ -17,6 +24,18 @@ export class Item {
     width: 0,
     height: 0,
   };
+  dimension: Dimension = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
+
+  serialize = () => ({
+    id: this.id,
+    dimension: this.dimension,
+    configuration: this.configuration,
+  });
 
   constructor({ y = 0, x = 0, width = 0, height = 0 }: ItemConstructorParams = {}) {
     this.id = generateId();

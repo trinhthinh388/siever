@@ -13,12 +13,49 @@ class DNDManager extends BaseManager {
   private grid: Grid;
   private disposes: VoidFunction[] = [];
 
-  #setDraggingElement = (element: HTMLElement | null) => {
-    this.grid.getStore().dispatch(dndSlice.actions.setDraggingElement(element));
+  private draggingElement: HTMLElement | null = null;
+  private cloneDraggingElement: HTMLElement | null = null;
+
+  #setDraggingItem = (id: string) => {
+    const item = this.grid.getItem(id);
+    this.grid.getStore().dispatch(dndSlice.actions.setDraggingItem(item));
   };
 
+  #resetDraggingItem = () => {
+    if (this.cloneDraggingElement) {
+      this.grid.getGridElement().removeChild(this.cloneDraggingElement);
+    }
+    this.draggingElement = null;
+    this.cloneDraggingElement = null;
+    this.grid.getStore().dispatch(dndSlice.actions.setDraggingItem(undefined));
+  };
+
+  /**
+   * Returns the dragging HTML element.
+   * @throws if no item is being dragged.
+   */
   #getDraggingElement = () => {
-    return dndSlice.selectors.getDraggingElement(this.grid.getStore().getState());
+    const item = dndSlice.selectors.getDraggingItem(this.grid.getStore().getState());
+    if (!item) return null;
+
+    if (item.id === this.draggingElement?.id) return this.draggingElement;
+    else {
+      const queriedElement = window.document.getElementById(item.id);
+      if (!queriedElement)
+        throw new Error(`Dragging item with id ${item.id} doesn't exist in the DOM`);
+      this.draggingElement = queriedElement;
+      this.cloneDraggingElement = queriedElement.cloneNode() as HTMLElement;
+      this.cloneDraggingElement.style.setProperty('top', '0');
+      this.cloneDraggingElement.style.setProperty('left', '0');
+      this.cloneDraggingElement.style.setProperty('z-index', '0');
+      this.cloneDraggingElement.style.setProperty('opacity', '0.8');
+      this.cloneDraggingElement.style.setProperty('transition', 'all 0.3s ease 0s');
+      this.cloneDraggingElement.style.setProperty('background-color', 'red');
+
+      this.grid.getGridElement().appendChild(this.cloneDraggingElement);
+    }
+
+    return this.draggingElement;
   };
 
   #setInitialElementState = (el: HTMLElement, e: MouseEvent) => {
@@ -61,14 +98,14 @@ class DNDManager extends BaseManager {
 
     this.#setInitialElementState(itemEl, e);
 
-    this.#setDraggingElement(itemEl);
+    this.#setDraggingItem(itemEl.id);
   };
 
   #onMouseUp = (e: MouseEvent) => {
     const draggingElement = this.#getDraggingElement();
     if (!draggingElement) return;
     this.#resetElementState(draggingElement);
-    this.#setDraggingElement(null);
+    this.#resetDraggingItem();
   };
 
   #onMouseMove = (e: MouseEvent) => {
@@ -82,6 +119,17 @@ class DNDManager extends BaseManager {
 
     draggingElement.style.setProperty(DND_ELEMENT_CSS_VARS.translate, `${moveX} ${moveY} 0`);
   };
+
+  // /**
+  //  * Returns the top left cell position of the available dropzone.
+  //  *
+  //  */
+  // #getDropZone = (e: MouseEvent): Coordinate => {
+  //   return {
+  //     x: 0,
+  //     y: 0,
+  //   };
+  // };
 
   dropZoneRef = (element: HTMLDivElement | null) => {
     if (!element) return;

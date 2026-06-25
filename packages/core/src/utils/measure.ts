@@ -1,14 +1,40 @@
+import { fromPxToNumber } from './to-px';
+
 export const measure = (element: HTMLElement) => {
-  const { width, height, borderTop, borderLeft, borderRight, borderBottom } =
-    window.getComputedStyle(element);
+  const {
+    x,
+    y,
+    width,
+    height,
+    borderTop,
+    borderLeft,
+    paddingTop,
+    borderRight,
+    paddingLeft,
+    borderBottom,
+    paddingRight,
+    paddingBottom,
+  } = window.getComputedStyle(element);
   return {
-    width:
-      parseFloat(width.replace('px', '')) -
-      parseFloat(borderLeft.replace('px', '')) -
-      parseFloat(borderRight.replace('px', '')),
-    height:
-      parseFloat(height.replace('px', '')) -
-      parseFloat(borderTop.replace('px', '')) -
-      parseFloat(borderBottom.replace('px', '')),
+    x: fromPxToNumber(x),
+    y: fromPxToNumber(y),
+    width: fromPxToNumber(width),
+    height: fromPxToNumber(height),
+    paddingTop: fromPxToNumber(paddingTop),
+    paddingLeft: fromPxToNumber(paddingLeft),
+    paddingRight: fromPxToNumber(paddingRight),
+    paddingBottom: fromPxToNumber(paddingBottom),
+    contentWidth:
+      fromPxToNumber(width) -
+      fromPxToNumber(borderLeft) -
+      fromPxToNumber(borderRight) -
+      fromPxToNumber(paddingLeft) -
+      fromPxToNumber(paddingRight),
+    contentHeight:
+      fromPxToNumber(height) -
+      fromPxToNumber(borderTop) -
+      fromPxToNumber(borderBottom) -
+      fromPxToNumber(paddingTop) -
+      fromPxToNumber(paddingBottom),
   };
 };

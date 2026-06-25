@@ -1,23 +1,22 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { SerializedItem } from '../../item';
 
 export type DNDState = {
-  draggingElement: HTMLElement | null;
+  draggingItem?: SerializedItem;
 };
 
-const initialState: DNDState = {
-  draggingElement: null,
-};
+const initialState: DNDState = {};
 
 export const dndSlice = createSlice({
   name: 'dnd',
   initialState,
   reducerPath: '_siever/managers/dnd',
   selectors: {
-    getDraggingElement: (state) => state.draggingElement,
+    getDraggingItem: (state) => state.draggingItem,
   },
   reducers: {
-    setDraggingElement: (state, action: PayloadAction<DNDState['draggingElement']>) => {
-      return { ...state, draggingElement: action.payload };
+    setDraggingItem: (state, action: PayloadAction<DNDState['draggingItem']>) => {
+      return { ...state, draggingItem: action.payload };
     },
   },
 });

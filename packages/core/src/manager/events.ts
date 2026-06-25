@@ -52,7 +52,9 @@ class EventManager extends BaseManager {
     };
   };
 
-  init = (): void => {};
+  init = (): void => {
+    // Do nothing
+  };
 
   constructor({ grid }: EventManagerConstructorParams) {
     super();

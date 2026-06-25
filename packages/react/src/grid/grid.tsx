@@ -14,6 +14,7 @@ export const Grid = withGridProvider(
   ({ ref, width, height, children, className, ...props }: GridProps) => {
     const { grid } = useGridContext();
     const {
+      status,
       dimension: { grid: gridDimension, cell: cellDimension },
     } = useGridState();
 
@@ -27,15 +28,20 @@ export const Grid = withGridProvider(
         className={classNames('siever__grid', className)}
         style={
           {
-            '--siever-grid-width': gridDimension.width ? `${gridDimension.width}px` : undefined,
-            '--siever-grid-height': gridDimension.height ? `${gridDimension.height}px` : undefined,
             '--siever-grid-cell-size': cellDimension.width ? `${cellDimension.width}px` : undefined,
+            '--siever-grid-width': gridDimension.contentWidth
+              ? `${gridDimension.contentWidth}px`
+              : undefined,
+            '--siever-grid-height': gridDimension.contentHeight
+              ? `${gridDimension.contentHeight}px`
+              : undefined,
           } as React.CSSProperties
         }
         {...props}
       >
-        {children}
+        {status === 'initialized' && children}
       </div>
     );
   },
 );
+Grid.displayName = 'Grid';
