@@ -1,7 +1,6 @@
 import { Item as ItemClass } from '@core';
 import { type ComponentPropsWithRef, type ComponentType, useLayoutEffect, useState } from 'react';
-import { useGridContext } from '../hooks';
-import { useGridState } from '../hooks/use-grid-state';
+import { useGridContext, useItemDimension } from '../hooks';
 import { classNames } from '../utils';
 import { mergeRefs } from '../utils/merge-refs';
 
@@ -24,17 +23,15 @@ export const Item = <TProps extends ComponentPropsWithRef<'div'>>({
   component: Component = 'div',
   ...componentProps
 }: ItemProps<TProps>) => {
-  const { grid } = useGridContext();
-  const { items } = useGridState();
   const [item] = useState(new ItemClass({ x, y, width, height }));
+  const { grid } = useGridContext();
+  const dimension = useItemDimension(item.id);
 
   useLayoutEffect(() => {
     grid.addItem(item);
   }, [grid, item]);
 
-  if (!items[item.id]) return null;
-
-  const { dimension } = items[item.id];
+  if (!dimension) return null;
 
   return (
     <Component

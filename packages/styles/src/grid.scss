@@ -6,12 +6,12 @@
     box-sizing: border-box;
     border: 1px solid $border;
     border-radius: $radius;
-    // background-image:
-    //   linear-gradient($border 1px, transparent 1px),
-    //   linear-gradient(90deg, $border 1px, transparent 1px);
-    background-position: -1px -1px;
-    background-size: var(--siever-grid-cell-size, 0) var(--siever-grid-cell-size, 0);
-    min-width: var(--siever-grid-width);
-    min-height: var(--siever-grid-height);
+  }
+
+  &__grid-container {
+    position: relative;
+    box-sizing: border-box;
+    width: var(--siever-grid-content-width);
+    height: var(--siever-grid-content-height);
   }
 }

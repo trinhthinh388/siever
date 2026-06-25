@@ -9,12 +9,14 @@ import {
   type SupportedEvents,
 } from './manager';
 import { type AppDispatch, createStore, type GridState, type RootState, type Store } from './store';
-import { calculateItemDimension, generateId, measure, merge } from './utils';
+import type { Dimension } from './types';
+import { calculateItemDimension, generateId, measure, merge, toPx } from './utils';
 
 export {
   AppDispatch,
   calculateItemDimension,
   createStore,
+  Dimension,
   DNDManager,
   DNDManagerInitializeParams,
   EventManager,
@@ -31,4 +33,5 @@ export {
   RootState,
   Store,
   SupportedEvents,
+  toPx,
 };

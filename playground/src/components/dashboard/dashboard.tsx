@@ -15,7 +15,7 @@ export const Dashboard = () => {
       <div className="w-full h-full">
         <Grid className="p-6">
           <Item
-            x={11}
+            x={0}
             y={0}
             width={1}
             height={1}
@@ -23,17 +23,6 @@ export const Dashboard = () => {
             className="bg-white w-full h-full border rounded-md shadow-md siever__drag-handle transition-all delay-0 ease-linear data-[active]:scale-105 data-[active]:shadow-2xl"
           >
             1
-          </Item>
-
-          <Item
-            x={1}
-            y={0}
-            width={1}
-            height={1}
-            component={ItemComponent}
-            className="bg-white w-full h-full border rounded-md shadow-md siever__drag-handle transition-all delay-0 ease-linear data-[active]:scale-105 data-[active]:shadow-2xl"
-          >
-            2
           </Item>
         </Grid>
       </div>

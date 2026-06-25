@@ -1,11 +1,10 @@
-import type { GridConstructorParams } from '@core';
+import { toPx, type GridConstructorParams } from '@core';
+import '@siever/styles';
 import { useEffect, type ComponentPropsWithRef } from 'react';
 import { withGridProvider } from '../HOCs';
 import { useGridContext } from '../hooks';
-import { classNames } from '../utils';
-// @ts-expect-error scss imports
-import '@siever/styles';
 import { useGridState } from '../hooks/use-grid-state';
+import { classNames } from '../utils';
 import { mergeRefs } from '../utils/merge-refs';
 
 export type GridProps = Omit<GridConstructorParams, 'store'> & ComponentPropsWithRef<'div'>;
@@ -28,18 +27,18 @@ export const Grid = withGridProvider(
         className={classNames('siever__grid', className)}
         style={
           {
-            '--siever-grid-cell-size': cellDimension.width ? `${cellDimension.width}px` : undefined,
-            '--siever-grid-width': gridDimension.contentWidth
-              ? `${gridDimension.contentWidth}px`
-              : undefined,
-            '--siever-grid-height': gridDimension.contentHeight
-              ? `${gridDimension.contentHeight}px`
-              : undefined,
+            '--siever-grid-width': toPx(gridDimension.width),
+            '--siever-grid-height': toPx(gridDimension.height),
+            '--siever-grid-cell-size': toPx(cellDimension.width),
+            '--siever-grid-content-width': toPx(gridDimension.contentWidth),
+            '--siever-grid-content-height': toPx(gridDimension.contentHeight),
           } as React.CSSProperties
         }
         {...props}
       >
-        {status === 'initialized' && children}
+        <div className={classNames('siever__grid-container')}>
+          {status === 'initialized' && children}
+        </div>
       </div>
     );
   },

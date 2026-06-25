@@ -1,7 +1,8 @@
 import type { Item } from '../item';
 import { DNDManager, EventManager, type MouseEventHandler, type SupportedEvents } from '../manager';
 import type { Store } from '../store';
-import { bisectLeft, calculateItemDimension, measure } from '../utils';
+import type { Dimension } from '../types';
+import { bisectLeft, measure } from '../utils';
 import { DEFAULT_GRID_HEIGHT, DEFAULT_GRID_WIDTH } from './constants';
 import { gridSlice } from './slices/grid.slice';
 
@@ -35,10 +36,10 @@ export class Grid {
   #calculatePrefixSum = () => {
     const configuration = this.getConfiguration();
     const { width: cellSize } = this.getCellSize();
-    const { x, y, paddingTop, paddingLeft } = measure(this.getGridElement());
+    const { x, y } = measure(this.getGridElement());
 
-    const startX = x + paddingLeft;
-    const startY = y + paddingTop;
+    const startX = x;
+    const startY = y;
 
     for (let i = 0; i < configuration.width; i++) {
       this.prefixWidthSum[i] =
@@ -68,38 +69,53 @@ export class Grid {
       if (!gridEntry) return;
 
       const element = gridEntry.target as HTMLElement;
-      const configuration = gridSlice.selectors.configuration(this.store.getState());
-      const measuredRect = measure(element);
-
-      const gridSize = Math.max(measuredRect.contentWidth, measuredRect.contentHeight);
-      const cellSize = this.#calculateCellSize(gridSize);
-
-      this.store.dispatch(
-        gridSlice.actions.update({
-          status: 'initialized',
-          dimension: {
-            cell: { width: cellSize, height: cellSize },
-            grid: {
-              contentWidth: gridSize,
-              paddingTop: measuredRect.paddingTop,
-              width: cellSize * configuration.width,
-              paddingLeft: measuredRect.paddingLeft,
-              height: cellSize * configuration.height,
-              paddingRight: measuredRect.paddingRight,
-              paddingBottom: measuredRect.paddingBottom,
-              contentHeight: Math.max(gridSize, measuredRect.contentHeight),
-            },
-          },
-        }),
-      );
+      this.#calculateComponentsDimension(measure(element));
       this.#calculatePrefixSum();
     });
 
-  #calculateCellSize = (gridSize = 0) => {
+  #calculateCellSize = (grid: Dimension) => {
+    const gridSize = grid.contentWidth;
     const configuration = gridSlice.selectors.configuration(this.store.getState());
+
     const gutterWidth = (configuration.width - 1) * configuration.gutter;
     const cellSize = (gridSize - gutterWidth) / configuration.width;
+
     return cellSize;
+  };
+
+  #calculateComponentsDimension = (grid: Dimension) => {
+    const configuration = gridSlice.selectors.configuration(this.store.getState());
+
+    const cellSize = this.#calculateCellSize(grid);
+    const contentWidth =
+      configuration.width * cellSize + (configuration.width - 1) * configuration.gutter;
+    const contentHeight =
+      configuration.height * cellSize + (configuration.height - 1) * configuration.gutter;
+
+    this.store.dispatch(
+      gridSlice.actions.update({
+        status: 'initialized',
+        dimension: {
+          grid: {
+            ...grid,
+            contentWidth,
+            contentHeight,
+          },
+          cell: {
+            x: 0,
+            y: 0,
+            paddingTop: 0,
+            paddingLeft: 0,
+            paddingRight: 0,
+            width: cellSize,
+            contentWidth: 0,
+            paddingBottom: 0,
+            height: cellSize,
+            contentHeight: 0,
+          },
+        },
+      }),
+    );
   };
 
   /**
@@ -123,10 +139,6 @@ export class Grid {
    * Add item to the current Grid
    */
   addItem = (item: Item) => {
-    item.dimension = calculateItemDimension(
-      gridSlice.selectors.grid(this.store.getState()),
-      item.configuration,
-    );
     this.store.dispatch(gridSlice.actions.addItem(item.serialize()));
   };
 
@@ -194,6 +206,16 @@ export class Grid {
   getGridElement = () => {
     if (!this.element) throw new Error("Grid's element doesn't exist in the DOM");
     return this.element;
+  };
+
+  /**
+   * Returns the current DOM element of the Grid
+   * @throws if the element is null.
+   */
+  getGridContainerElement = () => {
+    const container = this.getGridElement().querySelector('.siever__grid-container');
+    if (!container) throw new Error("Grid container's element doesn't exist in the DOM");
+    return container;
   };
 
   /**

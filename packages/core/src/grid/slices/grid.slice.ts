@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { SerializedItem } from '../../item';
 import type { DeepPartial, Dimension } from '../../types';
-import { merge } from '../../utils';
+import { calculateItemDimension, merge } from '../../utils';
 import { DEFAULT_GRID_GUTTER, DEFAULT_GRID_HEIGHT, DEFAULT_GRID_WIDTH } from '../constants';
 
 export type GridStatus = 'uninitalized' | 'initializing' | 'initialized';
@@ -15,18 +15,11 @@ export type GridConfiguration = {
 export type GridState = {
   status: GridStatus;
   configuration: GridConfiguration;
-  items: Record<string, SerializedItem>;
   dimension: {
     cell: Dimension;
-    grid: Dimension & {
-      paddingTop: number;
-      paddingLeft: number;
-      contentWidth: number;
-      paddingRight: number;
-      contentHeight: number;
-      paddingBottom: number;
-    };
+    grid: Dimension;
   };
+  items: Record<string, SerializedItem & { dimension: Dimension }>;
 };
 
 const initialState: GridState = {
@@ -38,7 +31,18 @@ const initialState: GridState = {
     height: DEFAULT_GRID_HEIGHT,
   },
   dimension: {
-    cell: { x: 0, y: 0, width: 0, height: 0 },
+    cell: {
+      x: 0,
+      y: 0,
+      width: 0,
+      height: 0,
+      paddingTop: 0,
+      paddingLeft: 0,
+      paddingRight: 0,
+      contentWidth: 0,
+      contentHeight: 0,
+      paddingBottom: 0,
+    },
     grid: {
       x: 0,
       y: 0,
@@ -67,13 +71,24 @@ export const gridSlice = createSlice({
   },
   reducers: {
     addItem: (state, action: PayloadAction<SerializedItem>) => {
-      state.items[action.payload.id] = action.payload;
+      state.items[action.payload.id] = {
+        ...state.items[action.payload.id],
+        ...action.payload,
+      };
     },
     update: (state, action: PayloadAction<DeepPartial<GridState>>) => {
       const updated = merge(state, action.payload);
-      updated.items = Object.fromEntries(
-        Object.entries(updated.items).map(([id, item]) => [id, item]),
-      );
+      if ('dimension' in action.payload) {
+        updated.items = Object.fromEntries(
+          Object.entries(updated.items).map(([id, item]) => [
+            id,
+            {
+              ...item,
+              dimension: calculateItemDimension(updated, item.configuration),
+            },
+          ]),
+        );
+      }
       return updated;
     },
   },

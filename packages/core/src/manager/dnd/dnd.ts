@@ -23,7 +23,7 @@ class DNDManager extends BaseManager {
 
   #resetDraggingItem = () => {
     if (this.cloneDraggingElement) {
-      this.grid.getGridElement().removeChild(this.cloneDraggingElement);
+      this.grid.getGridContainerElement().removeChild(this.cloneDraggingElement);
     }
     this.draggingElement = null;
     this.cloneDraggingElement = null;
@@ -52,7 +52,7 @@ class DNDManager extends BaseManager {
       this.cloneDraggingElement.style.setProperty('transition', 'all 0.3s ease 0s');
       this.cloneDraggingElement.style.setProperty('background-color', 'red');
 
-      this.grid.getGridElement().appendChild(this.cloneDraggingElement);
+      this.grid.getGridContainerElement().appendChild(this.cloneDraggingElement);
     }
 
     return this.draggingElement;
@@ -119,17 +119,6 @@ class DNDManager extends BaseManager {
 
     draggingElement.style.setProperty(DND_ELEMENT_CSS_VARS.translate, `${moveX} ${moveY} 0`);
   };
-
-  // /**
-  //  * Returns the top left cell position of the available dropzone.
-  //  *
-  //  */
-  // #getDropZone = (e: MouseEvent): Coordinate => {
-  //   return {
-  //     x: 0,
-  //     y: 0,
-  //   };
-  // };
 
   dropZoneRef = (element: HTMLDivElement | null) => {
     if (!element) return;

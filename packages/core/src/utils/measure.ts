@@ -1,40 +1,41 @@
+import type { Dimension } from '../types';
 import { fromPxToNumber } from './to-px';
 
-export const measure = (element: HTMLElement) => {
+export const measure = (element: HTMLElement): Dimension => {
   const {
     x,
     y,
     width,
     height,
-    borderTop,
-    borderLeft,
     paddingTop,
-    borderRight,
     paddingLeft,
-    borderBottom,
     paddingRight,
     paddingBottom,
+    borderTopWidth,
+    borderLeftWidth,
+    borderRightWidth,
+    borderBottomWidth,
   } = window.getComputedStyle(element);
+
+  const w = fromPxToNumber(width);
+  const h = fromPxToNumber(height);
+  const pTop = fromPxToNumber(paddingTop);
+  const pRight = fromPxToNumber(paddingRight);
+  const pBottom = fromPxToNumber(paddingBottom);
+  const pLeft = fromPxToNumber(paddingLeft);
+
   return {
+    width: w,
+    height: h,
+    paddingTop: pTop,
+    paddingLeft: pLeft,
     x: fromPxToNumber(x),
     y: fromPxToNumber(y),
-    width: fromPxToNumber(width),
-    height: fromPxToNumber(height),
-    paddingTop: fromPxToNumber(paddingTop),
-    paddingLeft: fromPxToNumber(paddingLeft),
-    paddingRight: fromPxToNumber(paddingRight),
-    paddingBottom: fromPxToNumber(paddingBottom),
+    paddingRight: pRight,
+    paddingBottom: pBottom,
     contentWidth:
-      fromPxToNumber(width) -
-      fromPxToNumber(borderLeft) -
-      fromPxToNumber(borderRight) -
-      fromPxToNumber(paddingLeft) -
-      fromPxToNumber(paddingRight),
+      w - fromPxToNumber(borderLeftWidth) - fromPxToNumber(borderRightWidth) - pLeft - pRight,
     contentHeight:
-      fromPxToNumber(height) -
-      fromPxToNumber(borderTop) -
-      fromPxToNumber(borderBottom) -
-      fromPxToNumber(paddingTop) -
-      fromPxToNumber(paddingBottom),
+      h - fromPxToNumber(borderTopWidth) - fromPxToNumber(borderBottomWidth) - pTop - pBottom,
   };
 };
