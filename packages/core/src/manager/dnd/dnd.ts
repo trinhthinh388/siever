@@ -1,8 +1,10 @@
 import type { Grid } from '../../grid';
-import { measure, toPx } from '../../utils';
+import { ITEM_ELEMENT_ATTRIBUTES, type SerializedItem } from '../../item';
+import { fromPxToNumber, measure, toPx } from '../../utils';
+import { over } from '../../utils/fp';
 import { recursiveFindItemElement } from '../../utils/recursive-find-item-element';
 import { BaseManager } from '../base';
-import { DND_ELEMENT_CSS_VARS } from './constants';
+import { DND_ELEMENT_ATTRIBUTES, DND_ELEMENT_CSS_VARS } from './constants';
 import { dndSlice } from './dnd.slice';
 
 export type DNDManagerInitializeParams = {
@@ -14,6 +16,7 @@ export type DNDManagerInitializeParams = {
  * Created atomically in `#beginDrag`, cleared in `#resetDragState`.
  */
 type DragState = {
+  item: SerializedItem;
   /** The original element being dragged */
   element: HTMLElement;
   /** The ghost/clone element */
@@ -71,6 +74,7 @@ class DNDManager extends BaseManager {
     const clonedElementRect = measure(clonedElement);
 
     // Mark original as dragging
+    itemElement.setAttribute(DND_ELEMENT_ATTRIBUTES.dataActive, 'true');
     itemElement.style.setProperty(
       DND_ELEMENT_CSS_VARS.transformOrigin,
       `${transformOriginX}% ${transformOriginY}%`,
@@ -78,6 +82,7 @@ class DNDManager extends BaseManager {
     itemElement.classList.add('siever__item--dragging');
 
     this.dragState = {
+      item,
       clonedElement,
       element: itemElement,
       grabOffset: {
@@ -109,37 +114,12 @@ class DNDManager extends BaseManager {
    * Handles mouse movement during a drag.
    * All coordinate data comes from the in-memory `DragState` — no DOM reads.
    */
-  #drag = (e: MouseEvent) => {
-    if (!this.dragState) return;
-
-    const { element, grabOffset, clonedElement, clonedElementOrigin } = this.dragState;
-
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
-
-    // Move the original element to follow the mouse
-    const moveX = mouseX - grabOffset.x;
-    const moveY = mouseY - grabOffset.y;
-    element.style.setProperty(DND_ELEMENT_CSS_VARS.translate, `${toPx(moveX)} ${toPx(moveY)} 0`);
-
-    // Snap the clone to the nearest grid cell
-    const possibleDropTarget = this.grid.getSnapCoordinates(
-      mouseX - clonedElementOrigin.x,
-      mouseY - clonedElementOrigin.y,
-    );
-    clonedElement.style.setProperty(
-      DND_ELEMENT_CSS_VARS.translate,
-      `${toPx(possibleDropTarget.position.x - clonedElementOrigin.x)} ${toPx(possibleDropTarget.position.y - clonedElementOrigin.y)} 0`,
-    );
-  };
+  #drag = (e: MouseEvent) => over([this.#moveElement, this.#moveCloneElement])(e);
 
   /**
    * Ends the current drag and cleans up all state.
    */
-  #stopDrag = (_e: MouseEvent) => {
-    if (!this.dragState) return;
-    this.#resetDragState();
-  };
+  #stopDrag = (_e: MouseEvent) => over([this.#drop, this.#resetDragState])();
 
   /**
    * Resets all drag-related state:
@@ -154,15 +134,79 @@ class DNDManager extends BaseManager {
     const { element, clonedElement } = this.dragState;
 
     // Reset original element
+    element.classList.remove('siever__item--dragging');
+    element.removeAttribute(DND_ELEMENT_ATTRIBUTES.dataActive);
     element.style.removeProperty(DND_ELEMENT_CSS_VARS.translate);
     element.style.removeProperty(DND_ELEMENT_CSS_VARS.transformOrigin);
-    element.classList.remove('siever__item--dragging');
 
     // Remove clone from DOM
     clonedElement.remove();
 
     // Clear Redux state
     this.grid.getStore().dispatch(dndSlice.actions.setDraggingItem(undefined));
+
+    this.dragState = undefined;
+  };
+
+  #moveElement = (e: MouseEvent) => {
+    if (!this.dragState) return;
+
+    const { element, grabOffset } = this.dragState;
+
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+
+    // Move the original element to follow the mouse
+    const moveX = mouseX - grabOffset.x;
+    const moveY = mouseY - grabOffset.y;
+    element.style.setProperty(DND_ELEMENT_CSS_VARS.translate, `${toPx(moveX)} ${toPx(moveY)} 0`);
+  };
+
+  #canDrop = (item: SerializedItem) => ({
+    atCell: (x: number, y: number) => {
+      const configuration = this.grid.getConfiguration();
+      const availableWidth = configuration.width - x;
+      const availableHeight = configuration.height - y;
+
+      return (
+        item.configuration.width <= availableWidth && item.configuration.height <= availableHeight
+      );
+    },
+  });
+
+  #drop = () => {
+    if (!this.dragState) return;
+
+    const { item, clonedElement } = this.dragState;
+
+    const newX = fromPxToNumber(clonedElement.getAttribute(ITEM_ELEMENT_ATTRIBUTES.dataItemX));
+    const newY = fromPxToNumber(clonedElement.getAttribute(ITEM_ELEMENT_ATTRIBUTES.dataItemY));
+    this.grid.updateItem(item.id, {
+      x: newX,
+      y: newY,
+    });
+  };
+
+  #moveCloneElement = (e: MouseEvent) => {
+    if (!this.dragState) return;
+
+    const { item, element, clonedElement, clonedElementOrigin } = this.dragState;
+
+    // Snap the clone to the nearest grid cell
+    const elementRect = measure(element);
+    const { cell, viewport } = this.grid.convertViewportCoordinatesToCellCoordinates(
+      elementRect.x,
+      elementRect.y,
+    );
+
+    if (this.#canDrop(item).atCell(cell.x, cell.y)) {
+      clonedElement.setAttribute(ITEM_ELEMENT_ATTRIBUTES.dataItemX, `${cell.x}`);
+      clonedElement.setAttribute(ITEM_ELEMENT_ATTRIBUTES.dataItemY, `${cell.y}`);
+      clonedElement.style.setProperty(
+        DND_ELEMENT_CSS_VARS.translate,
+        `${toPx(viewport.x - clonedElementOrigin.x)} ${toPx(viewport.y - clonedElementOrigin.y)} 0`,
+      );
+    }
   };
 
   init = (): void => {

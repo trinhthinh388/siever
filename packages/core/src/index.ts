@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Grid, type GridConstructorParams } from './grid';
-import { Item, type ItemConfiguration, type ItemConstructorParams } from './item';
+import { Item, type ItemConfiguration, type SerializedItem } from './item';
 import {
   DNDManager,
   type DNDManagerInitializeParams,
@@ -26,11 +26,11 @@ export {
   GridState,
   Item,
   ItemConfiguration,
-  ItemConstructorParams,
   measure,
   merge,
   MouseEventHandler,
   RootState,
+  SerializedItem,
   Store,
   SupportedEvents,
   toPx,

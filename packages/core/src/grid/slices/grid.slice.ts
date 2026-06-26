@@ -80,6 +80,17 @@ export const gridSlice = createSlice({
         ...action.payload,
       };
     },
+    updateItem: (
+      state,
+      action: PayloadAction<DeepPartial<Omit<SerializedItem, 'id'>> & { id: string }>,
+    ) => {
+      const id = action.payload.id;
+      const updated = merge(state.items[id], action.payload);
+      state.items[id] = {
+        ...updated,
+        dimension: calculateItemDimension(state, updated.configuration),
+      };
+    },
     update: (state, action: PayloadAction<DeepPartial<GridState>>) => {
       const updated = merge(state, action.payload);
       if ('dimension' in action.payload) {

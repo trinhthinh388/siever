@@ -18,6 +18,8 @@ export const calculateItemDimension = (
   const cellHeight = cellSize * height + Math.max(0, height - 1) * gutter;
 
   return {
+    x: 0,
+    y: 0,
     paddingTop: 0,
     paddingLeft: 0,
     width: cellWidth,
@@ -26,7 +28,7 @@ export const calculateItemDimension = (
     height: cellHeight,
     contentWidth: cellWidth,
     paddingRight: cellWidth,
-    y: cellSize * y + offsetY,
-    x: cellSize * x + offsetX,
+    top: cellSize * y + offsetY,
+    left: cellSize * x + offsetX,
   };
 };

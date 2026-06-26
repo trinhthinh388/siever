@@ -1,6 +1,6 @@
 import { Item as ItemClass } from '@core';
 import { type ComponentPropsWithRef, type ComponentType, useLayoutEffect, useState } from 'react';
-import { useGridContext, useItemDimension } from '../hooks';
+import { useGridContext, useItem } from '../hooks';
 import { classNames } from '../utils';
 import { mergeRefs } from '../utils/merge-refs';
 
@@ -23,30 +23,29 @@ export const Item = <TProps extends ComponentPropsWithRef<'div'>>({
   component: Component = 'div',
   ...componentProps
 }: ItemProps<TProps>) => {
-  const [item] = useState(new ItemClass({ x, y, width, height }));
   const { grid } = useGridContext();
-  const dimension = useItemDimension(item.id);
+  const [instance] = useState(new ItemClass());
+  const item = useItem(instance.getId());
 
   useLayoutEffect(() => {
-    grid.addItem(item);
-  }, [grid, item]);
+    grid.addItem(instance.getId(), { x, y, width, height });
+  }, [grid, instance, x, y, width, height]);
 
-  if (!dimension) return null;
+  if (!item) return null;
 
   return (
     <Component
-      id={item.id}
+      {...componentProps}
+      id={instance.getId()}
       ref={mergeRefs(ref)}
-      data-component="siever"
-      data-slot="item"
       style={{
-        top: dimension.top,
-        left: dimension.left,
-        width: dimension.width,
-        height: dimension.height,
+        top: item.dimension.top,
+        left: item.dimension.left,
+        width: item.dimension.width,
+        height: item.dimension.height,
       }}
       className={classNames('siever__item siever__draggable', className)}
-      {...componentProps}
+      {...instance.getElementAttributes(item.configuration)}
     />
   );
 };

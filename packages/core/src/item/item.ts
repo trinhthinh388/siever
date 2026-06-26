@@ -1,7 +1,10 @@
+import type { Dimension } from '../types';
 import { generateId } from '../utils';
+import { ITEM_ELEMENT_ATTRIBUTES } from './constants';
 
 export type SerializedItem = {
   id: string;
+  dimension: Dimension;
   configuration: ItemConfiguration;
 };
 
@@ -12,30 +15,21 @@ export type ItemConfiguration = {
   height: number;
 };
 
-export type ItemConstructorParams = Partial<ItemConfiguration>;
-
 export class Item {
-  id: string;
-  configuration: ItemConfiguration = {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-  };
+  private id: string;
 
-  serialize = () => ({
-    id: this.id,
-    configuration: this.configuration,
+  getId = () => this.id;
+
+  getElementAttributes = (configuration: ItemConfiguration) => ({
+    [ITEM_ELEMENT_ATTRIBUTES.dataSlot]: 'item',
+    [ITEM_ELEMENT_ATTRIBUTES.dataComponent]: 'siever',
+    [ITEM_ELEMENT_ATTRIBUTES.dataItemX]: configuration.x,
+    [ITEM_ELEMENT_ATTRIBUTES.dataItemY]: configuration.y,
+    [ITEM_ELEMENT_ATTRIBUTES.dataItemWidth]: configuration.width,
+    [ITEM_ELEMENT_ATTRIBUTES.dataItemHeight]: configuration.height,
   });
 
-  constructor({ y = 0, x = 0, width = 0, height = 0 }: ItemConstructorParams = {}) {
+  constructor() {
     this.id = generateId();
-    this.configuration = { x, y, width, height };
-
-    this.getConfiguration = this.getConfiguration.bind(this);
-  }
-
-  getConfiguration() {
-    return this.configuration;
   }
 }

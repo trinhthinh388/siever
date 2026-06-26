@@ -1,8 +1,8 @@
-import type { Item } from '../item';
+import type { ItemConfiguration } from '../item';
 import { DNDManager, EventManager, type MouseEventHandler, type SupportedEvents } from '../manager';
 import type { Store } from '../store';
-import type { Dimension } from '../types';
-import { bisectLeft, measure } from '../utils';
+import type { Coordinate, DeepPartial, Dimension } from '../types';
+import { calculateItemDimension, measure } from '../utils';
 import { DEFAULT_GRID_HEIGHT, DEFAULT_GRID_WIDTH } from './constants';
 import { gridSlice } from './slices/grid.slice';
 
@@ -30,24 +30,6 @@ export class Grid {
     events: new EventManager({ grid: this }),
   };
   private observers: GridObservers;
-  private prefixWidthSum: Array<number>;
-  private prefixHeightSum: Array<number>;
-
-  #calculatePrefixSum = () => {
-    const configuration = this.getConfiguration();
-    const { width: cellSize } = this.getCellSize();
-    const { x, y } = measure(this.getGridContainerElement());
-
-    for (let i = 0; i < configuration.width; i++) {
-      this.prefixWidthSum[i] =
-        x + cellSize * i + configuration.gutter * i + Math.max(0, (i - 1) * configuration.gutter);
-    }
-
-    for (let i = 0; i < configuration.height; i++) {
-      this.prefixHeightSum[i] =
-        y + cellSize * i + configuration.gutter * i + Math.max(0, (i - 1) * configuration.gutter);
-    }
-  };
 
   #createMutationObserver = () =>
     new MutationObserver((mutationList) => {
@@ -67,7 +49,6 @@ export class Grid {
 
       const element = gridEntry.target as HTMLElement;
       this.#calculateComponentsDimension(measure(element));
-      this.#calculatePrefixSum();
     });
 
   #calculateCellSize = (grid: Dimension) => {
@@ -121,6 +102,46 @@ export class Grid {
   getCellSize = () => gridSlice.selectors.cellDimension(this.store.getState());
 
   /**
+   * Given a viewport coordinate (e.g. from a dragged element),
+   * returns the nearest grid cell indices and the snapped viewport position
+   * of that cell's top-left corner.
+   */
+  convertViewportCoordinatesToCellCoordinates = (
+    viewportX: number,
+    viewportY: number,
+  ): { cell: Coordinate; viewport: Coordinate } => {
+    const state = this.store.getState();
+    const { cell, grid } = gridSlice.selectors.dimension(state);
+    const configuration = gridSlice.selectors.configuration(state);
+
+    const step = cell.width + configuration.gutter;
+
+    // The grid container is inside the grid element, offset by padding + border.
+    // grid.x / grid.y are from getBoundingClientRect (border-box origin).
+    // Content starts after padding.
+    const contentOriginX = grid.x + grid.paddingLeft;
+    const contentOriginY = grid.y + grid.paddingTop;
+
+    // Position relative to the grid content area
+    const relX = viewportX - contentOriginX;
+    const relY = viewportY - contentOriginY;
+
+    const col = Math.round(relX / step);
+    const row = Math.round(relY / step);
+
+    const clampedCol = Math.max(0, Math.min(col, configuration.width - 1));
+    const clampedRow = Math.max(0, Math.min(row, configuration.height - 1));
+
+    return {
+      cell: { x: clampedCol, y: clampedRow },
+      viewport: {
+        x: contentOriginX + clampedCol * step,
+        y: contentOriginY + clampedRow * step,
+      },
+    };
+  };
+
+  /**
    * Clean-up everything.
    */
   cleanup = () => {
@@ -136,8 +157,26 @@ export class Grid {
   /**
    * Add item to the current Grid
    */
-  addItem = (item: Item) => {
-    this.store.dispatch(gridSlice.actions.addItem(item.serialize()));
+  addItem = (id: string, configuration: ItemConfiguration) => {
+    this.store.dispatch(
+      gridSlice.actions.addItem({
+        id,
+        configuration,
+        dimension: calculateItemDimension(
+          gridSlice.selectors.grid(this.store.getState()),
+          configuration,
+        ),
+      }),
+    );
+  };
+
+  updateItem = (id: string, configuration: DeepPartial<ItemConfiguration>) => {
+    this.store.dispatch(
+      gridSlice.actions.updateItem({
+        id,
+        configuration,
+      }),
+    );
   };
 
   /**
@@ -147,30 +186,6 @@ export class Grid {
     const item = gridSlice.selectors.item(this.store.getState())(id);
     if (!item) throw new Error(`Item with id ${id} not found`);
     return item;
-  };
-
-  /**
-   * Get the snapped Grid's cell coordinate from the provided X and Y.
-   * @example
-   * ```js
-   * const node = getCellCoordinates(100, 100);
-   * // x: 1, h: 2 => the cell is located at the 2nd-column and 3rd-row.
-   * ```
-   */
-  getSnapCoordinates = (x = 0, y = 0) => {
-    if (!this.element) throw new Error("Grid's element doesn't exist in the DOM");
-    const snapToCellX = bisectLeft(x, this.prefixWidthSum);
-    const snapToCellY = bisectLeft(y, this.prefixHeightSum);
-    return {
-      grid: {
-        x: snapToCellX,
-        y: snapToCellY,
-      },
-      position: {
-        x: this.prefixWidthSum[snapToCellX],
-        y: this.prefixHeightSum[snapToCellY],
-      },
-    };
   };
 
   gridRef = (element: HTMLDivElement | null) => {
@@ -233,8 +248,6 @@ export class Grid {
       resize: this.#createResizeObserver(),
       mutation: this.#createMutationObserver(),
     };
-    this.prefixWidthSum = Array.from<number>({ length: width }).fill(0);
-    this.prefixHeightSum = Array.from<number>({ length: height }).fill(0);
 
     this.managers.dnd.init();
     this.managers.events.init();

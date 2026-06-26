@@ -17,8 +17,8 @@ export const Dashboard = () => {
           <Item
             x={0}
             y={0}
-            width={1}
-            height={1}
+            width={3}
+            height={4}
             component={ItemComponent}
             className="bg-white w-full h-full border rounded-md shadow-md siever__drag-handle transition-all delay-0 ease-linear data-[active]:scale-105 data-[active]:shadow-2xl"
           >
