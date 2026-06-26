@@ -36,19 +36,16 @@ export class Grid {
   #calculatePrefixSum = () => {
     const configuration = this.getConfiguration();
     const { width: cellSize } = this.getCellSize();
-    const { x, y } = measure(this.getGridElement());
-
-    const startX = x;
-    const startY = y;
+    const { x, y } = measure(this.getGridContainerElement());
 
     for (let i = 0; i < configuration.width; i++) {
       this.prefixWidthSum[i] =
-        startX + cellSize * i + configuration.gutter * i + configuration.gutter;
+        x + cellSize * i + configuration.gutter * i + Math.max(0, (i - 1) * configuration.gutter);
     }
 
     for (let i = 0; i < configuration.height; i++) {
       this.prefixHeightSum[i] =
-        startY + cellSize * i + configuration.gutter * i + configuration.gutter;
+        y + cellSize * i + configuration.gutter * i + Math.max(0, (i - 1) * configuration.gutter);
     }
   };
 
@@ -129,6 +126,7 @@ export class Grid {
   cleanup = () => {
     this.observers.resize.disconnect();
     this.observers.mutation.disconnect();
+    this.managers.dnd.destroy();
   };
 
   subscribe = (event: SupportedEvents, callback: MouseEventHandler) => {
@@ -164,11 +162,13 @@ export class Grid {
     const snapToCellX = bisectLeft(x, this.prefixWidthSum);
     const snapToCellY = bisectLeft(y, this.prefixHeightSum);
     return {
-      x: this.prefixWidthSum[snapToCellX],
-      y: this.prefixHeightSum[snapToCellY],
       grid: {
         x: snapToCellX,
         y: snapToCellY,
+      },
+      position: {
+        x: this.prefixWidthSum[snapToCellX],
+        y: this.prefixHeightSum[snapToCellY],
       },
     };
   };
@@ -215,7 +215,7 @@ export class Grid {
   getGridContainerElement = () => {
     const container = this.getGridElement().querySelector('.siever__grid-container');
     if (!container) throw new Error("Grid container's element doesn't exist in the DOM");
-    return container;
+    return container as HTMLElement;
   };
 
   /**

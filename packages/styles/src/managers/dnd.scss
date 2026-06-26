@@ -9,6 +9,14 @@
     cursor: grabbing !important;
   }
 
+  &__item--clone {
+    z-index: 0;
+    opacity: 0.8;
+    background-color: red;
+    transition: all 0.3s ease !important;
+    translate: var(--siever-item-translate, 0 0) !important;
+  }
+
   &__item--draggable {
   }
 

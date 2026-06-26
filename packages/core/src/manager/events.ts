@@ -25,7 +25,7 @@ class EventManager extends BaseManager {
         return () => this.onMouseUpCallbacks.delete(callback);
       case 'mouseMove':
         this.onMouseMoveCallbacks.add(callback);
-        return () => this.onMouseUpCallbacks.delete(callback);
+        return () => this.onMouseMoveCallbacks.delete(callback);
       default:
         throw new Error(`Not supported event: ${event}`);
     }

@@ -40,8 +40,8 @@ export const Item = <TProps extends ComponentPropsWithRef<'div'>>({
       data-component="siever"
       data-slot="item"
       style={{
-        top: dimension.y,
-        left: dimension.x,
+        top: dimension.top,
+        left: dimension.left,
         width: dimension.width,
         height: dimension.height,
       }}

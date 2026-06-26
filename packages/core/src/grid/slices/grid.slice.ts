@@ -34,6 +34,8 @@ const initialState: GridState = {
     cell: {
       x: 0,
       y: 0,
+      top: 0,
+      left: 0,
       width: 0,
       height: 0,
       paddingTop: 0,
@@ -46,6 +48,8 @@ const initialState: GridState = {
     grid: {
       x: 0,
       y: 0,
+      top: 0,
+      left: 0,
       width: 0,
       height: 0,
       paddingTop: 0,
