@@ -1,5 +1,5 @@
-import type { Grid } from '../grid';
-import { BaseManager } from './base';
+import type { Grid } from '../../grid';
+import { BaseManager } from '../base';
 
 export type MouseEventHandler = (event: MouseEvent) => void;
 
@@ -53,6 +53,10 @@ class EventManager extends BaseManager {
   };
 
   init = (): void => {
+    // Do nothing
+  };
+
+  destroy = (): void => {
     // Do nothing
   };
 
