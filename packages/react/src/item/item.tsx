@@ -24,7 +24,7 @@ export const Item = <TProps extends ComponentPropsWithRef<'div'>>({
   ...componentProps
 }: ItemProps<TProps>) => {
   const { grid } = useGridContext();
-  const [instance] = useState(new ItemClass());
+  const [instance] = useState(new ItemClass({ grid }));
   const item = useItem(instance.getId());
 
   useLayoutEffect(() => {

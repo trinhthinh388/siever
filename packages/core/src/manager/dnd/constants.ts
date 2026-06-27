@@ -1,9 +1,13 @@
 export const DND_ELEMENT_ATTRIBUTES = {
-  dataActive: 'data-active',
-  dataShiftX: 'data-shift-x',
-  dataShiftY: 'data-shift-y',
-  dataOriginalWidth: 'data-original-width',
-  dataOriginalHeight: 'data-original-height',
+  dataDrag: 'data-drag',
+  draggable: 'draggable',
+  dataDragState: 'data-drag-state',
+};
+
+export const DND_DRAG_STATE = {
+  IDLE: 'idle',
+  DRAGGING: 'dragging',
+  DROPPING: 'dropping',
 };
 
 export const DND_ELEMENT_CSS_VARS = {

@@ -1,23 +1,21 @@
 @use '../variables' as *;
 
 .siever {
-  &__item--dragging {
-    transform-origin: var(--siever-item-transform-origin, 0% 0%) !important;
-    translate: var(--siever-item-translate, 0 0) !important;
-    z-index: 9999;
-    transition: box-shadow 0.3s ease !important;
-    cursor: grabbing !important;
+  &__item {
+    &[data-drag='true'] {
+      transform-origin: var(--siever-item-transform-origin, 0% 0%);
+      translate: var(--siever-item-translate, 0 0);
+      translate: var(--siever-item-translate, 0 0);
+      z-index: 9999;
+      cursor: grabbing;
+    }
   }
 
   &__item--clone {
+    opacity: 0.1;
     z-index: 0;
-    opacity: 0.8;
-    background-color: red;
     transition: all 0.3s ease !important;
-    translate: var(--siever-item-translate, 0 0) !important;
-  }
-
-  &__item--draggable {
+    background-color: red;
   }
 
   &__drag-handle {

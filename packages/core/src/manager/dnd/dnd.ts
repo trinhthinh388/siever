@@ -1,10 +1,10 @@
 import type { Grid } from '../../grid';
 import { ITEM_ELEMENT_ATTRIBUTES, type SerializedItem } from '../../item';
-import { fromPxToNumber, measure, toPx } from '../../utils';
+import { debounce, fromPxToNumber, measure, toPx } from '../../utils';
 import { over } from '../../utils/fp';
 import { recursiveFindItemElement } from '../../utils/recursive-find-item-element';
 import { BaseManager } from '../base';
-import { DND_ELEMENT_ATTRIBUTES, DND_ELEMENT_CSS_VARS } from './constants';
+import { DND_DRAG_STATE, DND_ELEMENT_ATTRIBUTES, DND_ELEMENT_CSS_VARS } from './constants';
 import { dndSlice } from './dnd.slice';
 
 export type DNDManagerInitializeParams = {
@@ -60,12 +60,8 @@ class DNDManager extends BaseManager {
     this.grid.getStore().dispatch(dndSlice.actions.setDraggingItem(item));
 
     // Build drag state atomically
-    const { top, left, width, height } = measure(itemElement);
     const mouseX = e.clientX;
     const mouseY = e.clientY;
-
-    const transformOriginX = (Math.abs(mouseX - left) / width) * 100;
-    const transformOriginY = (Math.abs(mouseY - top) / height) * 100;
 
     // Create the clone element
     const clonedElement = this.#createCloneElement(itemElement);
@@ -73,13 +69,17 @@ class DNDManager extends BaseManager {
     this.grid.getGridContainerElement().appendChild(clonedElement);
     const clonedElementRect = measure(clonedElement);
 
-    // Mark original as dragging
-    itemElement.setAttribute(DND_ELEMENT_ATTRIBUTES.dataActive, 'true');
+    // Setup initial style for the original element
+    const { top, left, width, height } = measure(itemElement);
+    const transformOriginX = (Math.abs(mouseX - left) / width) * 100;
+    const transformOriginY = (Math.abs(mouseY - top) / height) * 100;
     itemElement.style.setProperty(
       DND_ELEMENT_CSS_VARS.transformOrigin,
       `${transformOriginX}% ${transformOriginY}%`,
     );
-    itemElement.classList.add('siever__item--dragging');
+    itemElement.setAttribute(DND_ELEMENT_ATTRIBUTES.dataDrag, 'true');
+    itemElement.setAttribute(DND_ELEMENT_ATTRIBUTES.draggable, 'false');
+    this.#markAsIdle(itemElement);
 
     this.dragState = {
       item,
@@ -134,8 +134,9 @@ class DNDManager extends BaseManager {
     const { element, clonedElement } = this.dragState;
 
     // Reset original element
-    element.classList.remove('siever__item--dragging');
-    element.removeAttribute(DND_ELEMENT_ATTRIBUTES.dataActive);
+    element.removeAttribute(DND_ELEMENT_ATTRIBUTES.dataDrag);
+    element.removeAttribute(DND_ELEMENT_ATTRIBUTES.draggable);
+    element.removeAttribute(DND_ELEMENT_ATTRIBUTES.dataDragState);
     element.style.removeProperty(DND_ELEMENT_CSS_VARS.translate);
     element.style.removeProperty(DND_ELEMENT_CSS_VARS.transformOrigin);
 
@@ -160,6 +161,7 @@ class DNDManager extends BaseManager {
     const moveX = mouseX - grabOffset.x;
     const moveY = mouseY - grabOffset.y;
     element.style.setProperty(DND_ELEMENT_CSS_VARS.translate, `${toPx(moveX)} ${toPx(moveY)} 0`);
+    this.#markAsDragging(element);
   };
 
   #canDrop = (item: SerializedItem) => ({
@@ -177,8 +179,10 @@ class DNDManager extends BaseManager {
   #drop = () => {
     if (!this.dragState) return;
 
-    const { item, clonedElement } = this.dragState;
+    const { item, element, clonedElement } = this.dragState;
 
+    this.#markAsDragging.cancel();
+    this.#markAsDropping(element);
     const newX = fromPxToNumber(clonedElement.getAttribute(ITEM_ELEMENT_ATTRIBUTES.dataItemX));
     const newY = fromPxToNumber(clonedElement.getAttribute(ITEM_ELEMENT_ATTRIBUTES.dataItemY));
     this.grid.updateItem(item.id, {
@@ -208,6 +212,24 @@ class DNDManager extends BaseManager {
       );
     }
   };
+
+  #markAsIdle = (element: HTMLElement) => {
+    element.setAttribute(DND_ELEMENT_ATTRIBUTES.dataDragState, DND_DRAG_STATE.IDLE);
+  };
+
+  #markAsDropping = (element: HTMLElement) => {
+    element.setAttribute(DND_ELEMENT_ATTRIBUTES.dataDragState, DND_DRAG_STATE.DROPPING);
+  };
+
+  #markAsDragging = (() => {
+    const deferMarkAsIdle = debounce(this.#markAsIdle, 100);
+    const fn = (element: HTMLElement) => {
+      element.setAttribute(DND_ELEMENT_ATTRIBUTES.dataDragState, DND_DRAG_STATE.DRAGGING);
+      deferMarkAsIdle(element);
+    };
+    fn.cancel = deferMarkAsIdle.cancel;
+    return fn;
+  })();
 
   init = (): void => {
     this.disposes.push(

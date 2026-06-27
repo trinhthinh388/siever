@@ -20,7 +20,7 @@ export const Dashboard = () => {
             width={3}
             height={4}
             component={ItemComponent}
-            className="bg-white w-full h-full border rounded-md shadow-md siever__drag-handle transition-all delay-0 ease-linear data-[active]:scale-105 data-[active]:shadow-2xl"
+            className="bg-white w-full h-full border rounded-md shadow-md siever__drag-handle transition-all data-[drag-state='dragging']:transition-transform data-[drag-state='idle']:transition-all data-[drag-state='dropping']:transition-all delay-0 ease-linear data-[drag='true']:scale-105 data-[drag='true']:shadow-2xl"
           >
             1
           </Item>

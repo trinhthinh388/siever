@@ -1,24 +1,17 @@
-import type { Dimension } from '../types';
+import type { Grid } from '../grid';
 import { generateId } from '../utils';
 import { ITEM_ELEMENT_ATTRIBUTES } from './constants';
-
-export type SerializedItem = {
-  id: string;
-  dimension: Dimension;
-  configuration: ItemConfiguration;
-};
-
-export type ItemConfiguration = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
+import type { ItemConfiguration, ItemConstructorParameters } from './types';
 
 export class Item {
+  private grid: Grid;
   private id: string;
 
   getId = () => this.id;
+
+  getDimension = () => this.grid.getItem(this.id).dimension;
+
+  getConfiguration = () => this.grid.getItem(this.id).configuration;
 
   getElementAttributes = (configuration: ItemConfiguration) => ({
     [ITEM_ELEMENT_ATTRIBUTES.dataSlot]: 'item',
@@ -29,7 +22,8 @@ export class Item {
     [ITEM_ELEMENT_ATTRIBUTES.dataItemHeight]: configuration.height,
   });
 
-  constructor() {
+  constructor({ grid }: ItemConstructorParameters) {
     this.id = generateId();
+    this.grid = grid;
   }
 }
