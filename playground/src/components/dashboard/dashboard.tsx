@@ -24,6 +24,16 @@ export const Dashboard = () => {
           >
             1
           </Item>
+          <Item
+            x={4}
+            y={5}
+            width={3}
+            height={4}
+            component={ItemComponent}
+            className="bg-white w-full h-full border rounded-md shadow-md siever__drag-handle transition-all data-[drag-state='dragging']:transition-transform data-[drag-state='idle']:transition-all data-[drag-state='dropping']:transition-all delay-0 ease-linear data-[drag='true']:scale-105 data-[drag='true']:shadow-2xl"
+          >
+            3
+          </Item>
         </Grid>
       </div>
     </SieverProvider>

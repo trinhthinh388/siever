@@ -1,7 +1,14 @@
 import type { ItemConfiguration } from '../item';
-import { DNDManager, EventManager, type MouseEventHandler, type SupportedEvents } from '../manager';
+import {
+  CollisionManager,
+  DNDManager,
+  EventManager,
+  type MouseEventHandler,
+  type SupportedEvents,
+} from '../manager';
+import { CoordinatesManager } from '../manager/coordinates';
 import type { Store } from '../store';
-import type { Coordinate, DeepPartial, Dimension } from '../types';
+import type { DeepPartial, Dimension } from '../types';
 import { calculateItemDimension, measure } from '../utils';
 import { DEFAULT_GRID_HEIGHT, DEFAULT_GRID_WIDTH } from './constants';
 import { gridSlice } from './slices/grid.slice';
@@ -15,6 +22,8 @@ export type GridConstructorParams = {
 type GridManagers = {
   dnd: DNDManager;
   events: EventManager;
+  collision: CollisionManager;
+  coordinates: CoordinatesManager;
 };
 
 type GridObservers = {
@@ -28,6 +37,8 @@ export class Grid {
   private managers: GridManagers = {
     dnd: new DNDManager({ grid: this }),
     events: new EventManager({ grid: this }),
+    collision: new CollisionManager({ grid: this }),
+    coordinates: new CoordinatesManager({ grid: this }),
   };
   private observers: GridObservers;
 
@@ -102,52 +113,16 @@ export class Grid {
   getCellSize = () => gridSlice.selectors.cellDimension(this.store.getState());
 
   /**
-   * Given a viewport coordinate (e.g. from a dragged element),
-   * returns the nearest grid cell indices and the snapped viewport position
-   * of that cell's top-left corner.
-   */
-  convertViewportCoordinatesToCellCoordinates = (
-    viewportX: number,
-    viewportY: number,
-  ): { cell: Coordinate; viewport: Coordinate } => {
-    const state = this.store.getState();
-    const { cell, grid } = gridSlice.selectors.dimension(state);
-    const configuration = gridSlice.selectors.configuration(state);
-
-    const step = cell.width + configuration.gutter;
-
-    // The grid container is inside the grid element, offset by padding + border.
-    // grid.x / grid.y are from getBoundingClientRect (border-box origin).
-    // Content starts after padding.
-    const contentOriginX = grid.x + grid.paddingLeft;
-    const contentOriginY = grid.y + grid.paddingTop;
-
-    // Position relative to the grid content area
-    const relX = viewportX - contentOriginX;
-    const relY = viewportY - contentOriginY;
-
-    const col = Math.round(relX / step);
-    const row = Math.round(relY / step);
-
-    const clampedCol = Math.max(0, Math.min(col, configuration.width - 1));
-    const clampedRow = Math.max(0, Math.min(row, configuration.height - 1));
-
-    return {
-      cell: { x: clampedCol, y: clampedRow },
-      viewport: {
-        x: contentOriginX + clampedCol * step,
-        y: contentOriginY + clampedRow * step,
-      },
-    };
-  };
-
-  /**
    * Clean-up everything.
    */
   cleanup = () => {
     this.observers.resize.disconnect();
     this.observers.mutation.disconnect();
+
     this.managers.dnd.destroy();
+    this.managers.events.destroy();
+    this.managers.collision.destroy();
+    this.managers.coordinates.destroy();
   };
 
   subscribe = (event: SupportedEvents, callback: MouseEventHandler) => {
@@ -187,6 +162,11 @@ export class Grid {
     if (!item) throw new Error(`Item with id ${id} not found`);
     return item;
   };
+
+  /**
+   * Returns the Grid's items
+   */
+  getItems = () => gridSlice.selectors.items(this.store.getState());
 
   gridRef = (element: HTMLDivElement | null) => {
     if (!element) return;
@@ -238,6 +218,11 @@ export class Grid {
    */
   getConfiguration = () => gridSlice.selectors.configuration(this.getStore().getState());
 
+  /**
+   * Returns the current Grid's dimension
+   */
+  getDimension = () => gridSlice.selectors.dimension(this.getStore().getState());
+
   constructor({
     store,
     width = DEFAULT_GRID_WIDTH,
@@ -251,6 +236,8 @@ export class Grid {
 
     this.managers.dnd.init();
     this.managers.events.init();
+    this.managers.collision.init();
+    this.managers.coordinates.init();
 
     this.store.dispatch(
       gridSlice.actions.update({

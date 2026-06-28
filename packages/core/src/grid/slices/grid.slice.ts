@@ -68,6 +68,7 @@ export const gridSlice = createSlice({
   reducerPath: '_siever/grid',
   selectors: {
     grid: (state) => state,
+    items: (state) => state.items,
     dimension: (state) => state.dimension,
     configuration: (state) => state.configuration,
     cellDimension: (state) => state.dimension.cell,

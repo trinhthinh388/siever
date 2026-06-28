@@ -166,9 +166,14 @@ class DNDManager extends BaseManager {
 
   #canDrop = (item: SerializedItem) => ({
     atCell: (x: number, y: number) => {
+      const hasCollisions = this.grid
+        .getManagers()
+        .collision.isCollide(x, y, item.configuration.width, item.configuration.height, [item.id]);
       const configuration = this.grid.getConfiguration();
       const availableWidth = configuration.width - x;
       const availableHeight = configuration.height - y;
+
+      if (hasCollisions) return false;
 
       return (
         item.configuration.width <= availableWidth && item.configuration.height <= availableHeight
@@ -198,10 +203,10 @@ class DNDManager extends BaseManager {
 
     // Snap the clone to the nearest grid cell
     const elementRect = measure(element);
-    const { cell, viewport } = this.grid.convertViewportCoordinatesToCellCoordinates(
-      elementRect.x,
-      elementRect.y,
-    );
+    const cell = this.grid
+      .getManagers()
+      .coordinates.toGridCoordinates(elementRect.x, elementRect.y);
+    const viewport = this.grid.getManagers().coordinates.toViewportCoordinates(cell.x, cell.y);
 
     if (this.#canDrop(item).atCell(cell.x, cell.y)) {
       clonedElement.setAttribute(ITEM_ELEMENT_ATTRIBUTES.dataItemX, `${cell.x}`);
